@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+    tags: ["v*"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ["20", "22", "24"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run coverage
+      - run: npm run build
+
+  standards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --no-audit --no-fund
+      - name: Vector file matches its source and SHA256SUMS
+        run: |
+          python3 vectors/build_vectors.py
+          git diff --exit-code vectors/lomboktemplate-vectors-v1.json
+          sha256sum -c vectors/SHA256SUMS
+      - name: lombok doctor
+        env:
+          LOMBOK_PRIVACY_TERMS: ${{ secrets.LOMBOK_PRIVACY_TERMS }}
+        run: bash scripts/lombok-doctor.sh LombokTemplate

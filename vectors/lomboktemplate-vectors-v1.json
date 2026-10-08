@@ -1,0 +1,1739 @@
+{
+ "library": "LombokTemplate",
+ "version": "1",
+ "spec": "docs/SPEC_LombokTemplate_v0.1.0.md",
+ "cases": [
+  {
+   "id": "scan-plain-text",
+   "template": "hello world",
+   "data": null,
+   "expected": {
+    "output": "hello world"
+   }
+  },
+  {
+   "id": "scan-empty",
+   "template": "",
+   "data": null,
+   "expected": {
+    "output": ""
+   }
+  },
+  {
+   "id": "scan-single-brace",
+   "template": "a { b } c",
+   "data": null,
+   "expected": {
+    "output": "a { b } c"
+   }
+  },
+  {
+   "id": "scan-unclosed-tag",
+   "template": "a {{ b",
+   "data": null,
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "scan-unclosed-triple",
+   "template": "a {{{ b }}",
+   "data": null,
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "scan-empty-tag",
+   "template": "a {{ }} b",
+   "data": null,
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "scan-delimiter-change",
+   "template": "{{=<% %>=}}",
+   "data": null,
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "comment-inline",
+   "template": "a{{! note }}b",
+   "data": null,
+   "expected": {
+    "output": "ab"
+   }
+  },
+  {
+   "id": "comment-long",
+   "template": "a{{!-- has }} inside --}}b",
+   "data": null,
+   "expected": {
+    "output": "ab"
+   }
+  },
+  {
+   "id": "comment-long-unclosed",
+   "template": "a{{!-- open",
+   "data": null,
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "standalone-section-lines",
+   "template": "x\n{{#a}}\nin\n{{/a}}\ny",
+   "data": {
+    "a": true
+   },
+   "expected": {
+    "output": "x\nin\ny"
+   }
+  },
+  {
+   "id": "standalone-indented",
+   "template": "x\n  {{#a}}\n  in\n  {{/a}}\ny",
+   "data": {
+    "a": true
+   },
+   "expected": {
+    "output": "x\n  in\ny"
+   }
+  },
+  {
+   "id": "standalone-crlf",
+   "template": "x\r\n{{#a}}\r\nin\r\n{{/a}}\r\ny",
+   "data": {
+    "a": true
+   },
+   "expected": {
+    "output": "x\r\nin\r\ny"
+   }
+  },
+  {
+   "id": "standalone-comment",
+   "template": "a\n{{! c }}\nb",
+   "data": null,
+   "expected": {
+    "output": "a\nb"
+   }
+  },
+  {
+   "id": "standalone-at-start",
+   "template": "{{#a}}\nin\n{{/a}}",
+   "data": {
+    "a": true
+   },
+   "expected": {
+    "output": "in\n"
+   }
+  },
+  {
+   "id": "standalone-at-end-no-newline",
+   "template": "in\n{{#a}}{{/a}}",
+   "data": {
+    "a": true
+   },
+   "expected": {
+    "output": "in\n"
+   }
+  },
+  {
+   "id": "not-standalone-with-text",
+   "template": "x {{#a}}in{{/a}} y",
+   "data": {
+    "a": true
+   },
+   "expected": {
+    "output": "x in y"
+   }
+  },
+  {
+   "id": "not-standalone-two-tags",
+   "template": "{{#a}}{{/a}}\nz",
+   "data": {
+    "a": true
+   },
+   "expected": {
+    "output": "\nz"
+   }
+  },
+  {
+   "id": "variable-not-standalone",
+   "template": "a\n  {{v}}\nb",
+   "data": {
+    "v": "V"
+   },
+   "expected": {
+    "output": "a\n  V\nb"
+   }
+  },
+  {
+   "id": "else-standalone",
+   "template": "{{#if a}}\nyes\n{{else}}\nno\n{{/if}}\n",
+   "data": {
+    "a": false
+   },
+   "expected": {
+    "output": "no\n"
+   }
+  },
+  {
+   "id": "trim-before",
+   "template": "a   \n {{~v}}",
+   "data": {
+    "v": "V"
+   },
+   "expected": {
+    "output": "aV"
+   }
+  },
+  {
+   "id": "trim-after",
+   "template": "{{v~}}  \n  b",
+   "data": {
+    "v": "V"
+   },
+   "expected": {
+    "output": "Vb"
+   }
+  },
+  {
+   "id": "trim-both-block",
+   "template": "<ul>\n  {{~#each xs~}}\n  <li>{{.}}</li>\n  {{~/each~}}\n</ul>",
+   "data": {
+    "xs": [
+     1,
+     2
+    ]
+   },
+   "expected": {
+    "output": "<ul><li>1</li><li>2</li></ul>"
+   }
+  },
+  {
+   "id": "path-simple",
+   "template": "{{name}}",
+   "data": {
+    "name": "Lombok"
+   },
+   "expected": {
+    "output": "Lombok"
+   }
+  },
+  {
+   "id": "path-spaces",
+   "template": "{{  name  }}",
+   "data": {
+    "name": "L"
+   },
+   "expected": {
+    "output": "L"
+   }
+  },
+  {
+   "id": "path-dotted",
+   "template": "{{a.b.c}}",
+   "data": {
+    "a": {
+     "b": {
+      "c": "deep"
+     }
+    }
+   },
+   "expected": {
+    "output": "deep"
+   }
+  },
+  {
+   "id": "path-slash",
+   "template": "{{a/b}}",
+   "data": {
+    "a": {
+     "b": "s"
+    }
+   },
+   "expected": {
+    "output": "s"
+   }
+  },
+  {
+   "id": "path-missing",
+   "template": "[{{nope}}]",
+   "data": {},
+   "expected": {
+    "output": "[]"
+   }
+  },
+  {
+   "id": "path-broken-chain",
+   "template": "[{{a.b.c}}]",
+   "data": {
+    "a": {}
+   },
+   "expected": {
+    "output": "[]"
+   }
+  },
+  {
+   "id": "path-array-index",
+   "template": "{{xs.1}}",
+   "data": {
+    "xs": [
+     "a",
+     "b"
+    ]
+   },
+   "expected": {
+    "output": "b"
+   }
+  },
+  {
+   "id": "path-array-length",
+   "template": "{{xs.length}}",
+   "data": {
+    "xs": [
+     1,
+     2,
+     3
+    ]
+   },
+   "expected": {
+    "output": "3"
+   }
+  },
+  {
+   "id": "path-string-length-codepoints",
+   "template": "{{s.length}}",
+   "data": {
+    "s": "a😀b"
+   },
+   "expected": {
+    "output": "3"
+   }
+  },
+  {
+   "id": "path-bracket-segment",
+   "template": "{{a.[x y]}}",
+   "data": {
+    "a": {
+     "x y": 1
+    }
+   },
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "path-this",
+   "template": "{{this}}",
+   "data": "root",
+   "expected": {
+    "output": "root"
+   }
+  },
+  {
+   "id": "path-dot",
+   "template": "{{.}}",
+   "data": 5,
+   "expected": {
+    "output": "5"
+   }
+  },
+  {
+   "id": "path-this-prop",
+   "template": "{{this.a}}",
+   "data": {
+    "a": "A"
+   },
+   "expected": {
+    "output": "A"
+   }
+  },
+  {
+   "id": "path-proto-forbidden",
+   "template": "{{__proto__}}",
+   "data": {},
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "path-constructor-forbidden",
+   "template": "{{a.constructor}}",
+   "data": {
+    "a": {}
+   },
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "path-own-property-only",
+   "template": "[{{a.toString}}]",
+   "data": {
+    "a": {}
+   },
+   "expected": {
+    "output": "[]"
+   }
+  },
+  {
+   "id": "literal-string-single",
+   "template": "{{ 'hi' }}",
+   "data": null,
+   "expected": {
+    "output": "hi"
+   }
+  },
+  {
+   "id": "literal-string-double",
+   "template": "{{ \"hi\" }}",
+   "data": null,
+   "expected": {
+    "output": "hi"
+   }
+  },
+  {
+   "id": "literal-string-escape",
+   "template": "{{ 'it\\'s' }}",
+   "data": null,
+   "expected": {
+    "output": "it&#39;s"
+   }
+  },
+  {
+   "id": "literal-number",
+   "template": "{{ 42 }}",
+   "data": null,
+   "expected": {
+    "output": "42"
+   }
+  },
+  {
+   "id": "literal-negative-float",
+   "template": "{{ -1.5 }}",
+   "data": null,
+   "expected": {
+    "output": "-1.5"
+   }
+  },
+  {
+   "id": "literal-true",
+   "template": "{{ true }}",
+   "data": null,
+   "expected": {
+    "output": "true"
+   }
+  },
+  {
+   "id": "literal-null",
+   "template": "[{{ null }}]",
+   "data": null,
+   "expected": {
+    "output": "[]"
+   }
+  },
+  {
+   "id": "helper-call",
+   "template": "{{eq a 1}}",
+   "data": {
+    "a": 1
+   },
+   "expected": {
+    "output": "true"
+   }
+  },
+  {
+   "id": "helper-subexpr",
+   "template": "{{#if (gt n 0)}}pos{{else}}nonpos{{/if}}",
+   "data": {
+    "n": 3
+   },
+   "expected": {
+    "output": "pos"
+   }
+  },
+  {
+   "id": "helper-nested-subexpr",
+   "template": "{{not (eq (add a 1) 3)}}",
+   "data": {
+    "a": 2
+   },
+   "expected": {
+    "output": "false"
+   }
+  },
+  {
+   "id": "helper-hash-arg",
+   "template": "{{echo 1 x=2}}",
+   "data": null,
+   "expected": {
+    "error": "UNKNOWN_HELPER"
+   }
+  },
+  {
+   "id": "helper-unknown",
+   "template": "{{nohelper a}}",
+   "data": {
+    "a": 1
+   },
+   "expected": {
+    "error": "UNKNOWN_HELPER"
+   }
+  },
+  {
+   "id": "bare-name-is-data-not-helper",
+   "template": "{{upper}}",
+   "data": {
+    "upper": "data"
+   },
+   "expected": {
+    "output": "data"
+   }
+  },
+  {
+   "id": "filter-simple",
+   "template": "{{ name | upper }}",
+   "data": {
+    "name": "lombok"
+   },
+   "expected": {
+    "output": "LOMBOK"
+   }
+  },
+  {
+   "id": "filter-arg",
+   "template": "{{ n | add:1 }}",
+   "data": {
+    "n": 1
+   },
+   "expected": {
+    "output": "2"
+   }
+  },
+  {
+   "id": "filter-arg-space",
+   "template": "{{ n | add: 1 }}",
+   "data": {
+    "n": 1
+   },
+   "expected": {
+    "output": "2"
+   }
+  },
+  {
+   "id": "filter-chain",
+   "template": "{{ s | trim | upper }}",
+   "data": {
+    "s": "  ab  "
+   },
+   "expected": {
+    "output": "AB"
+   }
+  },
+  {
+   "id": "filter-two-args",
+   "template": "{{ s | truncate:3,'..' }}",
+   "data": {
+    "s": "abcdef"
+   },
+   "expected": {
+    "output": "abc.."
+   }
+  },
+  {
+   "id": "filter-on-literal",
+   "template": "{{ 'x' | upper }}",
+   "data": null,
+   "expected": {
+    "output": "X"
+   }
+  },
+  {
+   "id": "filter-unknown",
+   "template": "{{ a | nofilter }}",
+   "data": {
+    "a": 1
+   },
+   "expected": {
+    "error": "UNKNOWN_HELPER"
+   }
+  },
+  {
+   "id": "filter-missing-name",
+   "template": "{{ a | }}",
+   "data": {
+    "a": 1
+   },
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "expr-trailing-garbage",
+   "template": "{{ a ) }}",
+   "data": {
+    "a": 1
+   },
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "expr-unterminated-string",
+   "template": "{{ 'abc }}",
+   "data": null,
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "expr-unexpected-char",
+   "template": "{{ a ; b }}",
+   "data": null,
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "data-index-outside-block",
+   "template": "[{{@index}}]",
+   "data": null,
+   "expected": {
+    "output": "[]"
+   }
+  },
+  {
+   "id": "if-true",
+   "template": "{{#if a}}Y{{/if}}",
+   "data": {
+    "a": 1
+   },
+   "expected": {
+    "output": "Y"
+   }
+  },
+  {
+   "id": "if-false",
+   "template": "{{#if a}}Y{{/if}}",
+   "data": {
+    "a": 0
+   },
+   "expected": {
+    "output": ""
+   }
+  },
+  {
+   "id": "if-else",
+   "template": "{{#if a}}Y{{else}}N{{/if}}",
+   "data": {
+    "a": ""
+   },
+   "expected": {
+    "output": "N"
+   }
+  },
+  {
+   "id": "if-else-if",
+   "template": "{{#if a}}A{{else if b}}B{{else}}C{{/if}}",
+   "data": {
+    "a": false,
+    "b": true
+   },
+   "expected": {
+    "output": "B"
+   }
+  },
+  {
+   "id": "if-else-if-fallthrough",
+   "template": "{{#if a}}A{{else if b}}B{{else}}C{{/if}}",
+   "data": {},
+   "expected": {
+    "output": "C"
+   }
+  },
+  {
+   "id": "if-empty-array-falsy",
+   "template": "{{#if xs}}Y{{else}}N{{/if}}",
+   "data": {
+    "xs": []
+   },
+   "expected": {
+    "output": "N"
+   }
+  },
+  {
+   "id": "if-empty-object-truthy",
+   "template": "{{#if o}}Y{{else}}N{{/if}}",
+   "data": {
+    "o": {}
+   },
+   "expected": {
+    "output": "Y"
+   }
+  },
+  {
+   "id": "if-zero-falsy",
+   "template": "{{#if n}}Y{{else}}N{{/if}}",
+   "data": {
+    "n": 0
+   },
+   "expected": {
+    "output": "N"
+   }
+  },
+  {
+   "id": "if-string-zero-truthy",
+   "template": "{{#if s}}Y{{else}}N{{/if}}",
+   "data": {
+    "s": "0"
+   },
+   "expected": {
+    "output": "Y"
+   }
+  },
+  {
+   "id": "if-length",
+   "template": "{{#if xs.length}}has{{/if}}",
+   "data": {
+    "xs": [
+     1
+    ]
+   },
+   "expected": {
+    "output": "has"
+   }
+  },
+  {
+   "id": "if-does-not-push-context",
+   "template": "{{#if o}}{{name}}{{/if}}",
+   "data": {
+    "o": {
+     "name": "inner"
+    },
+    "name": "outer"
+   },
+   "expected": {
+    "output": "outer"
+   }
+  },
+  {
+   "id": "unless",
+   "template": "{{#unless a}}N{{else}}Y{{/unless}}",
+   "data": {
+    "a": false
+   },
+   "expected": {
+    "output": "N"
+   }
+  },
+  {
+   "id": "unless-else-if-unsupported",
+   "template": "{{#unless a}}x{{else if b}}y{{/unless}}",
+   "data": {},
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "if-missing-expr",
+   "template": "{{#if}}x{{/if}}",
+   "data": {},
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "block-mismatched-close",
+   "template": "{{#if a}}x{{/each}}",
+   "data": {
+    "a": 1
+   },
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "block-unclosed",
+   "template": "{{#if a}}x",
+   "data": {
+    "a": 1
+   },
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "block-stray-close",
+   "template": "x{{/if}}",
+   "data": {},
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "else-outside-block",
+   "template": "{{else}}",
+   "data": {},
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "double-else",
+   "template": "{{#if a}}1{{else}}2{{else}}3{{/if}}",
+   "data": {
+    "a": 1
+   },
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "each-array",
+   "template": "{{#each xs}}[{{this}}]{{/each}}",
+   "data": {
+    "xs": [
+     "a",
+     "b"
+    ]
+   },
+   "expected": {
+    "output": "[a][b]"
+   }
+  },
+  {
+   "id": "each-index-first-last",
+   "template": "{{#each xs}}{{@index}}{{#if @first}}F{{/if}}{{#if @last}}L{{/if}};{{/each}}",
+   "data": {
+    "xs": [
+     1,
+     2,
+     3
+    ]
+   },
+   "expected": {
+    "output": "0F;1;2L;"
+   }
+  },
+  {
+   "id": "each-index-plus-one",
+   "template": "{{#each xs}}{{ @index | add:1 }}{{/each}}",
+   "data": {
+    "xs": [
+     "a",
+     "b"
+    ]
+   },
+   "expected": {
+    "output": "12"
+   }
+  },
+  {
+   "id": "each-object-keys-in-order",
+   "template": "{{#each o}}{{@key}}={{this}};{{/each}}",
+   "data": {
+    "o": {
+     "b": 1,
+     "a": 2
+    }
+   },
+   "expected": {
+    "output": "b=1;a=2;"
+   }
+  },
+  {
+   "id": "each-item-fields",
+   "template": "{{#each items}}{{name}}:{{qty}} {{/each}}",
+   "data": {
+    "items": [
+     {
+      "name": "x",
+      "qty": 1
+     },
+     {
+      "name": "y",
+      "qty": 2
+     }
+    ]
+   },
+   "expected": {
+    "output": "x:1 y:2 "
+   }
+  },
+  {
+   "id": "each-parent-lookup",
+   "template": "{{#each items}}{{name}}{{../sep}}{{/each}}",
+   "data": {
+    "items": [
+     {
+      "name": "a"
+     },
+     {
+      "name": "b"
+     }
+    ],
+    "sep": ","
+   },
+   "expected": {
+    "output": "a,b,"
+   }
+  },
+  {
+   "id": "each-fallback-to-outer",
+   "template": "{{#each items}}{{name}}-{{currency}} {{/each}}",
+   "data": {
+    "items": [
+     {
+      "name": "a"
+     }
+    ],
+    "currency": "IDR"
+   },
+   "expected": {
+    "output": "a-IDR "
+   }
+  },
+  {
+   "id": "each-inner-shadows-outer",
+   "template": "{{#each items}}{{name}}{{/each}}",
+   "data": {
+    "items": [
+     {
+      "name": "in"
+     }
+    ],
+    "name": "out"
+   },
+   "expected": {
+    "output": "in"
+   }
+  },
+  {
+   "id": "each-else-empty",
+   "template": "{{#each xs}}x{{else}}none{{/each}}",
+   "data": {
+    "xs": []
+   },
+   "expected": {
+    "output": "none"
+   }
+  },
+  {
+   "id": "each-else-missing",
+   "template": "{{#each xs}}x{{else}}none{{/each}}",
+   "data": {},
+   "expected": {
+    "output": "none"
+   }
+  },
+  {
+   "id": "each-string-is-not-iterable",
+   "template": "{{#each s}}x{{else}}none{{/each}}",
+   "data": {
+    "s": "abc"
+   },
+   "expected": {
+    "output": "none"
+   }
+  },
+  {
+   "id": "each-nested-index",
+   "template": "{{#each rows}}{{#each this}}{{@../index}}.{{@index}} {{/each}}{{/each}}",
+   "data": {
+    "rows": [
+     [
+      1,
+      2
+     ],
+     [
+      3
+     ]
+    ]
+   },
+   "expected": {
+    "output": "0.0 0.1 1.0 "
+   }
+  },
+  {
+   "id": "each-block-params-unsupported",
+   "template": "{{#each xs as |x|}}{{x}}{{/each}}",
+   "data": {
+    "xs": [
+     1
+    ]
+   },
+   "expected": {
+    "error": "UNSUPPORTED"
+   }
+  },
+  {
+   "id": "with-pushes-context",
+   "template": "{{#with o}}{{a}}{{/with}}",
+   "data": {
+    "o": {
+     "a": "A"
+    }
+   },
+   "expected": {
+    "output": "A"
+   }
+  },
+  {
+   "id": "with-else",
+   "template": "{{#with o}}{{a}}{{else}}none{{/with}}",
+   "data": {
+    "o": null
+   },
+   "expected": {
+    "output": "none"
+   }
+  },
+  {
+   "id": "with-parent",
+   "template": "{{#with o}}{{a}}{{../b}}{{/with}}",
+   "data": {
+    "o": {
+     "a": 1
+    },
+    "b": 2
+   },
+   "expected": {
+    "output": "12"
+   }
+  },
+  {
+   "id": "root-var",
+   "template": "{{#each xs}}{{@root.t}}{{/each}}",
+   "data": {
+    "xs": [
+     1,
+     2
+    ],
+    "t": "T"
+   },
+   "expected": {
+    "output": "TT"
+   }
+  },
+  {
+   "id": "section-object",
+   "template": "{{#o}}{{a}}{{/o}}",
+   "data": {
+    "o": {
+     "a": "A"
+    }
+   },
+   "expected": {
+    "output": "A"
+   }
+  },
+  {
+   "id": "section-list",
+   "template": "{{#xs}}<{{.}}>{{/xs}}",
+   "data": {
+    "xs": [
+     1,
+     2
+    ]
+   },
+   "expected": {
+    "output": "<1><2>"
+   }
+  },
+  {
+   "id": "section-false",
+   "template": "{{#o}}x{{/o}}",
+   "data": {
+    "o": false
+   },
+   "expected": {
+    "output": ""
+   }
+  },
+  {
+   "id": "section-dotted-close",
+   "template": "{{#a.b}}{{c}}{{/a.b}}",
+   "data": {
+    "a": {
+     "b": {
+      "c": 1
+     }
+    }
+   },
+   "expected": {
+    "output": "1"
+   }
+  },
+  {
+   "id": "section-else-not-allowed",
+   "template": "{{#o}}x{{else}}y{{/o}}",
+   "data": {
+    "o": 1
+   },
+   "expected": {
+    "error": "SYNTAX"
+   }
+  },
+  {
+   "id": "inverted-missing",
+   "template": "{{^o}}none{{/o}}",
+   "data": {},
+   "expected": {
+    "output": "none"
+   }
+  },
+  {
+   "id": "inverted-empty-list",
+   "template": "{{^xs}}none{{/xs}}",
+   "data": {
+    "xs": []
+   },
+   "expected": {
+    "output": "none"
+   }
+  },
+  {
+   "id": "inverted-present",
+   "template": "{{^o}}none{{/o}}",
+   "data": {
+    "o": 1
+   },
+   "expected": {
+    "output": ""
+   }
+  },
+  {
+   "id": "caret-else",
+   "template": "{{#if a}}Y{{^}}N{{/if}}",
+   "data": {
+    "a": false
+   },
+   "expected": {
+    "output": "N"
+   }
+  },
+  {
+   "id": "escape-all",
+   "template": "{{v}}",
+   "data": {
+    "v": "<a href=\"x\" title='y'>&`=</a>"
+   },
+   "expected": {
+    "output": "&lt;a href&#61;&quot;x&quot; title&#61;&#39;y&#39;&gt;&amp;&#96;&#61;&lt;/a&gt;"
+   }
+  },
+  {
+   "id": "raw-triple",
+   "template": "{{{v}}}",
+   "data": {
+    "v": "<b>"
+   },
+   "expected": {
+    "output": "<b>"
+   }
+  },
+  {
+   "id": "raw-ampersand",
+   "template": "{{& v}}",
+   "data": {
+    "v": "<b>"
+   },
+   "expected": {
+    "output": "<b>"
+   }
+  },
+  {
+   "id": "number-integer",
+   "template": "{{n}}",
+   "data": {
+    "n": 3
+   },
+   "expected": {
+    "output": "3"
+   }
+  },
+  {
+   "id": "number-float",
+   "template": "{{n}}",
+   "data": {
+    "n": 1.25
+   },
+   "expected": {
+    "output": "1.25"
+   }
+  },
+  {
+   "id": "number-negative-zero",
+   "template": "{{n}}",
+   "data": {
+    "n": -0.0
+   },
+   "expected": {
+    "output": "0"
+   }
+  },
+  {
+   "id": "bool-output",
+   "template": "{{a}}/{{b}}",
+   "data": {
+    "a": true,
+    "b": false
+   },
+   "expected": {
+    "output": "true/false"
+   }
+  },
+  {
+   "id": "null-output",
+   "template": "[{{n}}]",
+   "data": {
+    "n": null
+   },
+   "expected": {
+    "output": "[]"
+   }
+  },
+  {
+   "id": "array-output",
+   "template": "{{xs}}",
+   "data": {
+    "xs": [
+     1,
+     "a",
+     null
+    ]
+   },
+   "expected": {
+    "output": "1,a,"
+   }
+  },
+  {
+   "id": "object-output",
+   "template": "[{{o}}]",
+   "data": {
+    "o": {
+     "a": 1
+    }
+   },
+   "expected": {
+    "output": "[]"
+   }
+  },
+  {
+   "id": "unicode-passthrough",
+   "template": "{{s}}",
+   "data": {
+    "s": "مرحبا 你好 é"
+   },
+   "expected": {
+    "output": "مرحبا 你好 é"
+   }
+  },
+  {
+   "id": "strict-missing",
+   "template": "{{nope}}",
+   "data": {},
+   "options": {
+    "strict": true
+   },
+   "expected": {
+    "error": "MISSING_VALUE"
+   }
+  },
+  {
+   "id": "strict-null-ok",
+   "template": "[{{n}}]",
+   "data": {
+    "n": null
+   },
+   "options": {
+    "strict": true
+   },
+   "expected": {
+    "output": "[]"
+   }
+  },
+  {
+   "id": "strict-missing-in-if-ok",
+   "template": "{{#if nope}}x{{/if}}ok",
+   "data": {},
+   "options": {
+    "strict": true
+   },
+   "expected": {
+    "output": "ok"
+   }
+  },
+  {
+   "id": "eq-strict-types",
+   "template": "{{eq a b}}",
+   "data": {
+    "a": 1,
+    "b": "1"
+   },
+   "expected": {
+    "output": "false"
+   }
+  },
+  {
+   "id": "eq-null-missing",
+   "template": "{{eq a nope}}",
+   "data": {
+    "a": null
+   },
+   "expected": {
+    "output": "true"
+   }
+  },
+  {
+   "id": "ne",
+   "template": "{{ne a b}}",
+   "data": {
+    "a": 1,
+    "b": 2
+   },
+   "expected": {
+    "output": "true"
+   }
+  },
+  {
+   "id": "gt-numbers",
+   "template": "{{gt 2 10}}",
+   "data": null,
+   "expected": {
+    "output": "false"
+   }
+  },
+  {
+   "id": "gt-strings-codepoint",
+   "template": "{{gt 'b' 'a'}}",
+   "data": null,
+   "expected": {
+    "output": "true"
+   }
+  },
+  {
+   "id": "lt-mixed-types-false",
+   "template": "{{lt 1 'a'}}",
+   "data": null,
+   "expected": {
+    "output": "false"
+   }
+  },
+  {
+   "id": "gte-lte",
+   "template": "{{gte 2 2}}{{lte 3 2}}",
+   "data": null,
+   "expected": {
+    "output": "truefalse"
+   }
+  },
+  {
+   "id": "and-or-not",
+   "template": "{{and 1 'x'}}{{or 0 ''}}{{not 0}}",
+   "data": null,
+   "expected": {
+    "output": "truefalsetrue"
+   }
+  },
+  {
+   "id": "and-arity",
+   "template": "{{and 1}}",
+   "data": null,
+   "expected": {
+    "error": "HELPER_ERROR"
+   }
+  },
+  {
+   "id": "add-strings-numeric",
+   "template": "{{add '1.5' 2}}",
+   "data": null,
+   "expected": {
+    "output": "3.5"
+   }
+  },
+  {
+   "id": "add-non-numeric",
+   "template": "{{add 'x' 1}}",
+   "data": null,
+   "expected": {
+    "error": "HELPER_ERROR"
+   }
+  },
+  {
+   "id": "sub-mul",
+   "template": "{{sub 5 2}} {{mul 2.5 4}}",
+   "data": null,
+   "expected": {
+    "output": "3 10"
+   }
+  },
+  {
+   "id": "div",
+   "template": "{{div 1 4}}",
+   "data": null,
+   "expected": {
+    "output": "0.25"
+   }
+  },
+  {
+   "id": "div-zero",
+   "template": "{{div 1 0}}",
+   "data": null,
+   "expected": {
+    "error": "HELPER_ERROR"
+   }
+  },
+  {
+   "id": "default-missing",
+   "template": "{{ c | default:'#1a73e8' }}",
+   "data": {},
+   "expected": {
+    "output": "#1a73e8"
+   }
+  },
+  {
+   "id": "default-empty-string",
+   "template": "{{ c | default:'x' }}",
+   "data": {
+    "c": ""
+   },
+   "expected": {
+    "output": "x"
+   }
+  },
+  {
+   "id": "default-zero-kept",
+   "template": "{{ c | default:9 }}",
+   "data": {
+    "c": 0
+   },
+   "expected": {
+    "output": "0"
+   }
+  },
+  {
+   "id": "upper-unicode",
+   "template": "{{ s | upper }}",
+   "data": {
+    "s": "straße"
+   },
+   "expected": {
+    "output": "STRASSE"
+   }
+  },
+  {
+   "id": "lower",
+   "template": "{{ s | lower }}",
+   "data": {
+    "s": "ÀB"
+   },
+   "expected": {
+    "output": "àb"
+   }
+  },
+  {
+   "id": "trim-ascii-only",
+   "template": "[{{ s | trim }}]",
+   "data": {
+    "s": "  x \t"
+   },
+   "expected": {
+    "output": "[  x]"
+   }
+  },
+  {
+   "id": "truncate-default-suffix",
+   "template": "{{ s | truncate:2 }}",
+   "data": {
+    "s": "abc"
+   },
+   "expected": {
+    "output": "ab…"
+   }
+  },
+  {
+   "id": "truncate-short",
+   "template": "{{ s | truncate:5 }}",
+   "data": {
+    "s": "abc"
+   },
+   "expected": {
+    "output": "abc"
+   }
+  },
+  {
+   "id": "truncate-codepoints",
+   "template": "{{ s | truncate:1 }}",
+   "data": {
+    "s": "😀😁"
+   },
+   "expected": {
+    "output": "😀…"
+   }
+  },
+  {
+   "id": "truncate-bad-length",
+   "template": "{{ s | truncate:-1 }}",
+   "data": {
+    "s": "abc"
+   },
+   "expected": {
+    "error": "HELPER_ERROR"
+   }
+  },
+  {
+   "id": "length-filter",
+   "template": "{{ xs | length }}/{{ o | length }}/{{ n | length }}",
+   "data": {
+    "xs": [
+     1,
+     2
+    ],
+    "o": {
+     "a": 1
+    },
+    "n": 5
+   },
+   "expected": {
+    "output": "2/1/0"
+   }
+  },
+  {
+   "id": "join",
+   "template": "{{ xs | join:', ' }}",
+   "data": {
+    "xs": [
+     "a",
+     "b"
+    ]
+   },
+   "expected": {
+    "output": "a, b"
+   }
+  },
+  {
+   "id": "join-default-sep",
+   "template": "{{ xs | join }}",
+   "data": {
+    "xs": [
+     1,
+     2
+    ]
+   },
+   "expected": {
+    "output": "1,2"
+   }
+  },
+  {
+   "id": "nl2br",
+   "template": "{{ s | nl2br }}",
+   "data": {
+    "s": "a<\nb\r\nc"
+   },
+   "expected": {
+    "output": "a&lt;<br>b<br>c"
+   }
+  },
+  {
+   "id": "raw-filter",
+   "template": "{{ s | raw }}",
+   "data": {
+    "s": "<i>x</i>"
+   },
+   "expected": {
+    "output": "<i>x</i>"
+   }
+  },
+  {
+   "id": "safeurl-https",
+   "template": "{{ u | safeUrl }}",
+   "data": {
+    "u": "https://x.test/?a=1&b=2"
+   },
+   "expected": {
+    "output": "https://x.test/?a&#61;1&amp;b&#61;2"
+   }
+  },
+  {
+   "id": "safeurl-javascript",
+   "template": "[{{ u | safeUrl }}]",
+   "data": {
+    "u": "javascript:alert(1)"
+   },
+   "expected": {
+    "output": "[]"
+   }
+  },
+  {
+   "id": "safeurl-obfuscated",
+   "template": "[{{ u | safeUrl }}]",
+   "data": {
+    "u": " java\tscript:alert(1)"
+   },
+   "expected": {
+    "output": "[]"
+   }
+  },
+  {
+   "id": "safeurl-relative",
+   "template": "{{ u | safeUrl }}",
+   "data": {
+    "u": "/a/b"
+   },
+   "expected": {
+    "output": "/a/b"
+   }
+  },
+  {
+   "id": "json-sorted",
+   "template": "{{{ o | json }}}",
+   "data": {
+    "o": {
+     "b": [
+      1,
+      null,
+      true
+     ],
+     "a": "x\"y"
+    }
+   },
+   "expected": {
+    "output": "{\"a\":\"x\\\"y\",\"b\":[1,null,true]}"
+   }
+  },
+  {
+   "id": "json-escaped-output",
+   "template": "{{ o | json }}",
+   "data": {
+    "o": {
+     "a": 1
+    }
+   },
+   "expected": {
+    "output": "{&quot;a&quot;:1}"
+   }
+  },
+  {
+   "id": "partial-basic",
+   "template": "[{{> p}}]",
+   "data": {
+    "x": 1
+   },
+   "partials": {
+    "p": "x={{x}}"
+   },
+   "expected": {
+    "output": "[x=1]"
+   }
+  },
+  {
+   "id": "partial-context",
+   "template": "{{> p o}}",
+   "data": {
+    "o": {
+     "x": 2
+    }
+   },
+   "partials": {
+    "p": "x={{x}}"
+   },
+   "expected": {
+    "output": "x=2"
+   }
+  },
+  {
+   "id": "partial-missing-lenient",
+   "template": "[{{> nope}}]",
+   "data": {},
+   "expected": {
+    "output": "[]"
+   }
+  },
+  {
+   "id": "partial-missing-strict",
+   "template": "[{{> nope}}]",
+   "data": {},
+   "options": {
+    "strict": true
+   },
+   "expected": {
+    "error": "MISSING_PARTIAL"
+   }
+  },
+  {
+   "id": "partial-standalone-indent",
+   "template": "a\n  {{> p}}\nb",
+   "data": {},
+   "partials": {
+    "p": "1\n2\n"
+   },
+   "expected": {
+    "output": "a\n  1\n  2\nb"
+   }
+  },
+  {
+   "id": "partial-recursion-limit",
+   "template": "{{> r}}",
+   "data": {},
+   "partials": {
+    "r": "x{{> r}}"
+   },
+   "expected": {
+    "error": "LIMIT_EXCEEDED"
+   }
+  },
+  {
+   "id": "partial-recursive-tree",
+   "template": "{{> node}}",
+   "data": {
+    "v": 1,
+    "kids": [
+     {
+      "v": 2,
+      "kids": []
+     }
+    ]
+   },
+   "partials": {
+    "node": "{{v}}({{#each kids}}{{> node}}{{/each}})"
+   },
+   "expected": {
+    "output": "1(2())"
+   }
+  },
+  {
+   "id": "depth-limit",
+   "template": "{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}",
+   "data": {
+    "a": 1
+   },
+   "expected": {
+    "error": "LIMIT_EXCEEDED"
+   }
+  },
+  {
+   "id": "depth-ok",
+   "template": "{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}{{#if a}}x{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}",
+   "data": {
+    "a": 1
+   },
+   "expected": {
+    "output": "x"
+   }
+  },
+  {
+   "id": "no-code-evaluation",
+   "template": "{{ constructor.constructor }}",
+   "data": {},
+   "expected": {
+    "error": "SYNTAX"
+   }
+  }
+ ]
+}
